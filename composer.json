@@ -10,7 +10,8 @@
         }
     },
     "require": {
-        "aphpi/client": "^0.1.0"
+        "aphpi/client": "^0.1.0",
+        "symfony/console": "^5.1"
     },
     "require-dev": {
         "phpunit/phpunit": "^8.5"

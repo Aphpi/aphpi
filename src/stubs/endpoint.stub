@@ -1,0 +1,10 @@
+<?php
+
+namespace DummyNamespace;
+
+use DummyRootNamespaceEndpoints\AbstractApi;
+
+class DummyClass extends AbstractApi
+{
+    //
+}
