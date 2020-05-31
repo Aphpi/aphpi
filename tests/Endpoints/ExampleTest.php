@@ -1,6 +1,6 @@
 <?php
 
-namespace Aphpi\Template\Tests;
+namespace Aphpi\Template\Tests\Endpoints;
 
 use Aphpi\Template\Api;
 

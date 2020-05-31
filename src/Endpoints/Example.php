@@ -1,8 +1,8 @@
 <?php
 
-namespace Aphpi\Template\Api;
+namespace Aphpi\Template\Endpoints;
 
-use Aphpi\Template\Api\AbstractApi;
+use Aphpi\Template\Endpoints\AbstractApi;
 
 class Example extends AbstractApi
 {

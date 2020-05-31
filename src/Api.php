@@ -3,7 +3,7 @@
 namespace Aphpi\Template;
 
 use Aphpi\Client\Client as BaseClient;
-use Aphpi\Template\Api\Example;
+use Aphpi\Template\Endpoints\Example;
 use Aphpi\Template\Client;
 
 class Api

@@ -1,6 +1,6 @@
 <?php
 
-namespace Aphpi\Template\Api;
+namespace Aphpi\Template\Endpoints;
 
 use Aphpi\Template\Client;
 
