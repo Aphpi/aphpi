@@ -2,12 +2,8 @@
 
 namespace Aphpi\Template\Tests\Endpoints;
 
-use Aphpi\Template\Api;
-
 class ExampleTest extends \Aphpi\Template\Tests\TestCase
 {
-    protected $api;
-
     /**
      * @test
      */

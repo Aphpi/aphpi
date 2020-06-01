@@ -4,10 +4,12 @@
 require __DIR__ . '/vendor/autoload.php';
 
 use Aphpi\Template\Commands\MakeEndpointCommand;
+use Aphpi\Template\Commands\MakeTestCommand;
 use Symfony\Component\Console\Application;
 
 $application = new Application();
 
 $application->add(new MakeEndpointCommand());
+$application->add(new MakeTestCommand());
 
 $application->run();

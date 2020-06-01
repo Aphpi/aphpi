@@ -6,30 +6,21 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class MakeEndpointCommand extends GeneratorCommand
+class MakeTestCommand extends GeneratorCommand
 {
-    protected $name = 'make:endpoint';
-    protected $description = 'Creates a new Endpoint';
+    protected $name = 'make:test';
+    protected $description = 'Creates a new Test';
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $name = $this->qualifyClass(trim($input->getArgument('name')));
         $return = parent::execute($input, $output);
 
-        $output->writeln('<info>Endpoint ' . $name . ' successfully created</info>');
+        $output->writeln('<info>Test ' . $name . ' successfully created</info>');
+
+        // option --test
 
         return $return;
-    }
-
-    /**
-     * Get the default namespace for the class.
-     *
-     * @param  string  $rootNamespace
-     * @return string
-     */
-    protected function getDefaultNamespace($rootNamespace)
-    {
-        return $rootNamespace . '\Endpoints';
     }
 
     protected function rootNamespace() : string
@@ -40,12 +31,12 @@ class MakeEndpointCommand extends GeneratorCommand
 
         $composer = json_decode(file_get_contents('composer.json'), true);
 
-        return $this->rootNamespace = array_keys($composer['autoload']['psr-4'])[0];
+        return $this->rootNamespace = array_keys($composer['autoload-dev']['psr-4'])[0];
     }
 
     protected function getStub() : string
     {
-        return 'src/stubs/endpoint.stub';
+        return 'src/stubs/test.stub';
     }
 
     /**
@@ -58,6 +49,6 @@ class MakeEndpointCommand extends GeneratorCommand
     {
         $name = str_replace($this->rootNamespace(), '', $name);
 
-        return 'src/' . str_replace('\\', '/', $name).'.php';
+        return 'tests/' . str_replace('\\', '/', $name).'.php';
     }
 }
