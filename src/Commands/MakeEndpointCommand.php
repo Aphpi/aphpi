@@ -17,16 +17,14 @@ class MakeEndpointCommand extends GeneratorCommand
     {
         parent::configure();
 
-        $this->addOption('test', null, InputOption::VALUE_OPTIONAL, '', false)
-            ->addOption('functions', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY);
+        $this->addOption('test', null, InputOption::VALUE_OPTIONAL, '', false);
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $this->input = $input;
+        $return = parent::execute($input, $output);
 
         $name = $this->qualifyClass(trim($input->getArgument('name')));
-        $return = parent::execute($input, $output);
 
         $output->writeln('<info>Endpoint ' . $name . ' successfully created</info>');
 
@@ -38,29 +36,6 @@ class MakeEndpointCommand extends GeneratorCommand
         }
 
         return $return;
-    }
-
-    protected function buildClass($name)
-    {
-        $stub = file_get_contents($this->getStub());
-
-        return $this->replaceNamespace($stub, $name)->addFunctions($stub)->replaceClass($stub, $name);
-    }
-
-    protected function addFunctions(&$stub)
-    {
-        $functions = $this->input->getOption('functions');
-        if ($functions === false) {
-            return $this;
-        }
-
-        $stub = str_replace(
-            '//',
-            implode("\n\n", $functions),
-            $stub
-        );
-
-        return $this;
     }
 
     /**

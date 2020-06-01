@@ -5,6 +5,7 @@ namespace Aphpi\Template\Commands;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 abstract class GeneratorCommand extends Command
@@ -17,12 +18,14 @@ abstract class GeneratorCommand extends Command
         $this
             ->setName($this->name)
             ->setDescription($this->description)
-            ->addArgument('name', InputArgument::REQUIRED);
+            ->addArgument('name', InputArgument::REQUIRED)
+            ->addOption('content', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY);
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $this->output = $output;
+        $this->input = $input;
 
         $name = $this->qualifyClass(trim($input->getArgument('name')));
         $path = $this->getPath($name);
@@ -79,19 +82,27 @@ abstract class GeneratorCommand extends Command
         return $this->rootNamespace = array_keys($composer['autoload-dev']['psr-4'])[0];
     }
 
-    /**
-     * Build the class with the given name.
-     *
-     * @param  string  $name
-     * @return string
-     *
-     * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
-     */
     protected function buildClass($name)
     {
         $stub = file_get_contents($this->getStub());
 
-        return $this->replaceNamespace($stub, $name)->replaceClass($stub, $name);
+        return $this->replaceNamespace($stub, $name)->addContent($stub)->replaceClass($stub, $name);
+    }
+
+    protected function addContent(&$stub)
+    {
+        $content = $this->input->getOption('content');
+        if ($content === false) {
+            return $this;
+        }
+
+        $stub = str_replace(
+            '//',
+            implode("\n\n", $content),
+            $stub
+        );
+
+        return $this;
     }
 
     protected function getStub() : string
