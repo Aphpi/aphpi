@@ -4,7 +4,7 @@ namespace Aphpi\Template\Endpoints;
 
 use Aphpi\Template\Client;
 
-class AbstractApi
+abstract class Endpoint
 {
     protected $client;
 

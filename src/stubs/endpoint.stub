@@ -2,9 +2,9 @@
 
 namespace DummyNamespace;
 
-use DummyRootNamespaceEndpoints\AbstractApi;
+use DummyRootNamespaceEndpoints\Endpoint;
 
-class DummyClass extends AbstractApi
+class DummyClass extends Endpoint
 {
     //
 }

@@ -2,9 +2,9 @@
 
 namespace Aphpi\Template\Endpoints;
 
-use Aphpi\Template\Endpoints\AbstractApi;
+use Aphpi\Template\Endpoints\Endpoint;
 
-class Example extends AbstractApi
+class Example extends Endpoint
 {
     public function post() : array
     {
