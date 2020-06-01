@@ -2,8 +2,10 @@
 
 namespace Aphpi\Template\Commands;
 
+use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 class MakeEndpointCommand extends GeneratorCommand
@@ -11,12 +13,26 @@ class MakeEndpointCommand extends GeneratorCommand
     protected $name = 'make:endpoint';
     protected $description = 'Creates a new Endpoint';
 
+    protected function configure()
+    {
+        parent::configure();
+
+        $this->addOption('test', null, InputOption::VALUE_OPTIONAL);
+    }
+
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $name = $this->qualifyClass(trim($input->getArgument('name')));
         $return = parent::execute($input, $output);
 
         $output->writeln('<info>Endpoint ' . $name . ' successfully created</info>');
+
+        if ($input->getOption('test') !== false) {
+            $command = $this->getApplication()->find('make:test');
+            $command->run(new ArrayInput([
+                'name' => 'Endpoints\\' . trim($input->getArgument('name')) . 'Test',
+            ]), $output);
+        }
 
         return $return;
     }
