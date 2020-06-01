@@ -11,5 +11,7 @@ $application = new Application();
 
 $application->add(new MakeEndpointCommand());
 $application->add(new MakeTestCommand());
+$application->add(new Aphpi\Template\Commands\Generate\OpenApiCommand());
+
 
 $application->run();
