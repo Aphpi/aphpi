@@ -6,5 +6,12 @@ use DummyRootNamespaceEndpoints\Endpoint;
 
 class DummyClass extends Endpoint
 {
+    DummyProperties
+
+    protected function setEndpoints() : void
+    {
+        DummyEndpoints
+    }
+
     //
 }

@@ -86,14 +86,16 @@ abstract class GeneratorCommand extends Command
     {
         $stub = file_get_contents($this->getStub());
 
-        return $this->replaceNamespace($stub, $name)->addContent($stub)->replaceClass($stub, $name);
+        return $this->replaceNamespace($stub, $name)
+            ->addContent($stub)
+            ->replaceClass($stub, $name);
     }
 
     protected function addContent(&$stub)
     {
         $content = $this->input->getOption('content');
-        if ($content === false) {
-            return $this;
+        if (! $content) {
+            $content = [];
         }
 
         $stub = str_replace(

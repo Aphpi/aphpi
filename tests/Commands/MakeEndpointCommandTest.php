@@ -64,4 +64,33 @@ class MakeEndpointCommandTest extends TestCase
         unlink($path . '/' . $filename);
         rmdir($path);
     }
+
+    /**
+     * @test
+     */
+    public function it_can_make_an_endpoint_with_endpoints()
+    {
+        $path = 'src/Endpoints';
+        $filename = 'Foo.php';
+
+        $app = new Application('aphpi cli');
+        $app->add(new MakeEndpointCommand);
+
+        $tester = new CommandTester($app->find('make:endpoint'));
+
+        $statusCode = $tester->execute([
+            'name' => 'Foo',
+            '--endpoints' => ['bar' => 'Aphpi\Template\Endpoints\Foo\Bar'],
+        ]);
+
+        $content = file_get_contents($path . '/' . $filename);
+
+        $this->assertEquals($statusCode, 0);
+        $this->assertDirectoryExists($path);
+        $this->assertFileExists($path . '/' . $filename);
+        $this->assertStringContainsString('public $bar;', $content);
+        $this->assertStringContainsString('$this->bar = new Aphpi\Template\Endpoints\Foo\Bar($this->client, $this->attributes);', $content);
+
+        unlink($path . '/' . $filename);
+    }
 }

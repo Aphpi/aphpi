@@ -17,7 +17,8 @@ class MakeEndpointCommand extends GeneratorCommand
     {
         parent::configure();
 
-        $this->addOption('test', null, InputOption::VALUE_OPTIONAL, '', false);
+        $this->addOption('test', null, InputOption::VALUE_OPTIONAL, '', false)
+            ->addOption('endpoints', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY);;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
@@ -36,6 +37,44 @@ class MakeEndpointCommand extends GeneratorCommand
         }
 
         return $return;
+    }
+
+    protected function buildClass($name)
+    {
+        $stub = file_get_contents($this->getStub());
+
+        return $this->replaceNamespace($stub, $name)
+            ->addContent($stub)
+            ->addEndpoints($stub)
+            ->replaceClass($stub, $name);
+    }
+
+    protected function addEndpoints(&$stub)
+    {
+        $endpoints = $this->input->getOption('endpoints');
+        if (! $endpoints) {
+            $endpoints = [];
+        }
+
+        $properties = [];
+        $setEndpoints = [];
+
+        foreach ($endpoints as $name => $namespace) {
+            $properties[] = 'public $' . $name . ';';
+            $setEndpoints[] = '$this->' . $name . ' = new ' . $namespace . '($this->client, $this->attributes);';
+        }
+
+        if (empty($setEndpoints)) {
+            $setEndpoints[] = '//';
+        }
+
+        $stub = str_replace(
+            ['DummyProperties', 'DummyEndpoints'],
+            [implode("\n", $properties), implode("\n", $setEndpoints)],
+            $stub
+        );
+
+        return $this;
     }
 
     /**
