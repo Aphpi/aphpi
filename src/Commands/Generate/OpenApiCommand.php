@@ -39,21 +39,59 @@ class OpenApiCommand extends Command
         $this->output = $output;
         $this->input = $input;
 
-        $filename = trim($input->getArgument('filename'));
-
         $this->makeEndpointCommand = $this->getApplication()->find('make:endpoint');
         $this->makeTestCommand = $this->getApplication()->find('make:test');
 
+        $filename = trim($input->getArgument('filename'));
+
         $openapi = json_decode(file_get_contents($filename), true);
 
-        $endpoints = [];
-        foreach ($openapi['paths'] as $uri => $path) {
-            $endpoints[] = $this->createEndpoint($uri, $path);
+        $rootEndpoints = $this->rootEndpoints($openapi['paths']);
+
+        $endpoint_namespaces = [];
+        foreach ($rootEndpoints as $key => $endpoint) {
+            $endpoint_namespaces[] = $this->createEndpoint($endpoint['uri'], $endpoint['path'], $endpoint['endpoints']);
         }
 
-        $this->replaceApi($openapi['host'], $endpoints);
+        $this->replaceApi($openapi['host'], $endpoint_namespaces);
         $this->replaceClient($openapi['basePath']);
+
         return 0;
+    }
+
+    protected function rootEndpoints(array $paths) : array
+    {
+        $rootEndpoints = [];
+        foreach ($paths as $uri => $path) {
+            $loc = &$rootEndpoints;
+            $name = substr(preg_replace('/\/\{\w+\}/', '', $uri), 1);
+            $parts = explode('/', $name);
+            $parts_count = count($parts);
+            $max_key = ($parts_count - 1);
+            foreach ($parts as $key => $part) {
+                if (! array_key_exists($part, $loc)) {
+                    $loc[$part] = [
+                        'endpoints' => [],
+                        'path' => [],
+                        'uri' => '',
+                    ];
+                }
+
+                if ($key == $max_key) {
+                    $loc = &$loc[$part];
+                }
+                else {
+                    $loc = &$loc[$part]['endpoints'];
+                }
+            }
+
+            $loc['uri'] = $uri;
+            $loc['path'] = $path;
+        }
+
+        ksort($rootEndpoints);
+
+        return $rootEndpoints;
     }
 
     protected function replaceApi(string $host, array $endpoints)
@@ -85,7 +123,7 @@ class OpenApiCommand extends Command
         file_put_contents($path, str_replace('//', implode("\n", $functions), $content));
     }
 
-    protected function createEndpoint(string $uri, array $path) : string
+    protected function createEndpoint(string $uri, array $path, array $endpoints) : string
     {
         $name = substr(preg_replace('/\/\{\w+\}/', '', $uri), 1);
         $namespace = implode('\\', array_map('ucfirst', explode('/', $name)));
@@ -100,15 +138,23 @@ class OpenApiCommand extends Command
             $tests[$verb] = $this->buildTest($namespace, $uri, $verb, $parameters);
         }
 
+        $endpoint_namespaces = [];
+        foreach ($endpoints as $key => $endpoint) {
+            $endpoint_namespaces[$key] = $this->createEndpoint($endpoint['uri'], $endpoint['path'], $endpoint['endpoints']);
+            break;
+        }
+
         $this->makeEndpointCommand->run(new ArrayInput([
             'name' => $namespace,
             '--content' => $functions,
+            '--endpoints' => $endpoint_namespaces,
         ]), $this->output);
 
         $this->makeTestCommand->run(new ArrayInput([
             'name' => 'Endpoints\\' . $namespace . 'Test',
             '--content' => $tests,
         ]), $this->output);
+
 
         return $namespace;
     }
@@ -126,11 +172,14 @@ class OpenApiCommand extends Command
         $parameters_string = [];
         $parameters_string2 = [];
         foreach ($parameters as $key => $parameter) {
-            $parameters_string[] = self::VARIABLE_TYPES[$parameter['type']] . ' $' . $parameter['name'];
+            $parameters_string[] = '?' . self::VARIABLE_TYPES[$parameter['type']] . ' $' . $parameter['name'] . ' = null';
+            if ($parameter['in'] == 'path') {
+                continue;
+            }
             $parameters_string2[] = "'" . $parameter['name'] . "' => $" . $parameter['name'];
         }
 
-        $urlWithVars = preg_replace('/\{(\w+)\}/', '" . $${1} . "', $uri);
+        $urlWithVars = preg_replace('/\{(\w+)\}/', '" . ($${1} ?? $this->$${1}) . "', $uri);
         $function .= implode(', ', $parameters_string) . ') { return $this->client->' . $verb . '("' . $urlWithVars . '", [' . implode(', ', $parameters_string2) . ']); }';
 
         return $function;
